@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Ouvertures & Fermetures — Campus des 11 Arts</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="page">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #f4f2ed; }
+  a { color: #9a4a25; }
+  a:hover { color: #6f3419; }
+  select, input, button { font-family: inherit; }
+  @media print {
+    body { background: #fff; }
+    .no-print { display: none !important; }
+    @page { size: A4 landscape; margin: 14mm; }
+    select { appearance: none; -webkit-appearance: none; border: 0 !important; background: transparent !important; padding: 0 !important; color: #1c1a17; font-weight: 500; }
+    button { border: 0 !important; background: transparent !important; color: #1c1a17 !important; padding: 0 !important; }
+  }
+</style>
+</helmet>
+<div style="min-height:100vh;background:#f4f2ed;padding:48px 32px 72px;font-family:Barlow,Helvetica,Arial,sans-serif;color:#1c1a17;display:flex;justify-content:center">
+  <div style="width:100%;max-width:1000px;display:flex;flex-direction:column;gap:28px">
+
+    <header style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px;border-bottom:1px solid #1c1a17;padding-bottom:18px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#8a8378">Campus des 11 Arts — année 2026/2027</div>
+        <h1 style="margin:0;font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:50px;line-height:1;letter-spacing:-0.01em">Ouvertures &amp; Fermetures</h1>
+      </div>
+      <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onClick="{{ printWeek }}" style="border:1px solid #9a4a25;background:#9a4a25;color:#fbfaf7;padding:10px 14px;font-size:13px;letter-spacing:0.02em;cursor:pointer">Imprimer la semaine</button>
+        <button onClick="{{ exportWeek }}" style="border:1px solid #1c1a17;background:#1c1a17;color:#fbfaf7;padding:10px 14px;font-size:13px;letter-spacing:0.02em;cursor:pointer">Exporter la semaine (.ics)</button>
+        <button onClick="{{ exportAll }}" style="border:1px solid #b8b1a4;background:transparent;color:#1c1a17;padding:10px 14px;font-size:13px;cursor:pointer">Tout l'agenda (.ics)</button>
+      </div>
+    </header>
+
+    <div class="no-print" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fbfaf7;border:1px solid #dcd7cd;padding:12px 14px">
+      <button onClick="{{ prevWeek }}" style="border:1px solid #dcd7cd;background:#f4f2ed;padding:8px 14px;font-size:15px;cursor:pointer">←</button>
+      <select value="{{ weekIndex }}" onChange="{{ onWeekPick }}" style="flex:1;min-width:240px;border:1px solid #dcd7cd;background:#f4f2ed;padding:9px 12px;font-size:15px">
+        <sc-for list="{{ weekOptions }}" as="w" hint-placeholder-count="4">
+          <option value="{{ w.i }}">{{ w.label }}</option>
+        </sc-for>
+      </select>
+      <button onClick="{{ nextWeek }}" style="border:1px solid #dcd7cd;background:#f4f2ed;padding:8px 14px;font-size:15px;cursor:pointer">→</button>
+      <button onClick="{{ copyPrev }}" style="border:1px solid #dcd7cd;background:transparent;padding:9px 14px;font-size:13px;cursor:pointer;color:#4a453d">Copier la semaine précédente</button>
+      <button onClick="{{ clearWeek }}" style="border:1px solid #dcd7cd;background:transparent;padding:9px 14px;font-size:13px;cursor:pointer;color:#4a453d">Vider</button>
+    </div>
+
+    <section style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#9a4a25">{{ weekTitle }}</div>
+        <div style="flex:1;height:1px;background:#dcd7cd"></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8a8378">{{ weekRange }}</div>
+      </div>
+
+      <div style="border:1px solid #dcd7cd;background:#dcd7cd;display:flex;flex-direction:column;gap:1px">
+        <div style="display:grid;grid-template-columns:150px 1fr 1fr 96px;gap:1px;background:#dcd7cd">
+          <div style="background:#eae6de;padding:11px 16px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8a8378">Jour</div>
+          <div style="background:#eae6de;padding:11px 16px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8a8378">Ouverture</div>
+          <div style="background:#eae6de;padding:11px 16px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8a8378">Fermeture</div>
+          <div style="background:#eae6de;padding:11px 16px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8a8378">Agenda</div>
+        </div>
+        <sc-for list="{{ days }}" as="d" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:150px 1fr 1fr 96px;gap:1px;background:#dcd7cd">
+            <div style="background:{{ d.dayBg }};padding:16px;display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:17px;font-weight:600">{{ d.dayName }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8a8378">{{ d.dateLabel }}</span>
+              <span style="display:{{ d.eventShown }};align-self:flex-start;margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;border:1px solid #1c1a17;padding:2px 7px">{{ d.eventTag }}</span>
+            </div>
+            <div style="background:{{ d.openBg }};padding:11px 14px;display:flex;align-items:center;gap:8px">
+              <select value="{{ d.open }}" onChange="{{ d.setOpen }}" style="flex:1;min-width:0;border:1px solid #dcd7cd;background:#f4f2ed;padding:8px 10px;font-size:16px">
+                <sc-for list="{{ d.choices }}" as="c" hint-placeholder-count="7">
+                  <option value="{{ c.v }}">{{ c.label }}</option>
+                </sc-for>
+              </select>
+              <button onClick="{{ d.toggleOpenTime }}" title="Basculer 8h / 9h" style="border:1px solid {{ d.openTimeBorder }};background:{{ d.openTimeBg }};color:{{ d.openTimeFg }};font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.04em;padding:8px 10px;cursor:pointer">{{ d.openTime }}</button>
+            </div>
+            <div style="background:{{ d.rowBg }};padding:11px 14px;display:flex;align-items:center;gap:8px">
+              <select value="{{ d.close }}" onChange="{{ d.setClose }}" style="flex:1;min-width:0;border:1px solid #dcd7cd;background:#f4f2ed;padding:8px 10px;font-size:16px">
+                <sc-for list="{{ d.choices }}" as="c" hint-placeholder-count="7">
+                  <option value="{{ c.v }}">{{ c.label }}</option>
+                </sc-for>
+              </select>
+              <select value="{{ d.closeTime }}" onChange="{{ d.setCloseTime }}" style="border:1px solid #dcd7cd;background:#f4f2ed;padding:8px 6px;font-family:'IBM Plex Mono',monospace;font-size:13px">
+                <sc-for list="{{ closeTimes }}" as="t" hint-placeholder-count="5">
+                  <option value="{{ t }}">{{ t }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div style="background:{{ d.rowBg }};padding:11px 14px;display:flex;align-items:center;justify-content:center;gap:10px">
+              <a href="{{ d.gcalOpen }}" target="_blank" rel="noopener" title="Ajouter l'ouverture à Google Agenda" style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.06em;text-decoration:none;border-bottom:1px solid currentColor;opacity:{{ d.openOpacity }}">OUV</a>
+              <a href="{{ d.gcalClose }}" target="_blank" rel="noopener" title="Ajouter la fermeture à Google Agenda" style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.06em;text-decoration:none;border-bottom:1px solid currentColor;opacity:{{ d.closeOpacity }}">FER</a>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:14px;color:#4a453d">
+        <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;background:#9a4a25;color:#fbfaf7;padding:4px 8px">08:00</span> ouverture avancée — à ne pas oublier<span style="margin-left:18px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;border:1px solid #1c1a17;padding:2px 7px">SALON / JPO</span> <span>disponible le samedi</span></div>
+        <div>{{ weekSummary }}</div>
+      </div>
+    </section>
+
+    <section style="display:flex;flex-wrap:wrap;gap:36px;border-top:1px solid #dcd7cd;padding-top:20px">
+      <div style="display:flex;flex-direction:column;gap:10px;min-width:280px;flex:1">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8a8378">Équipe</div>
+        <sc-for list="{{ team }}" as="p" hint-placeholder-count="6">
+          <div style="display:flex;justify-content:space-between;gap:16px;font-size:14px;border-bottom:1px dotted #dcd7cd;padding-bottom:5px">
+            <span style="font-weight:600">{{ p.name }}</span>
+            <span style="display:flex;align-items:center;gap:12px">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8a8378">{{ p.email }}</span>
+              <button class="no-print" onClick="{{ p.exportPerson }}" title="Exporter uniquement ses créneaux" style="border:1px solid #dcd7cd;background:transparent;color:#9a4a25;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;padding:3px 7px;cursor:pointer">.ICS</button>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-width:280px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#8a8378">Google Agenda</div>
+        <div style="font-size:14px;line-height:1.75;color:#4a453d">« OUV » et « FER » ouvrent un événement Google Agenda pré-rempli (titre, date, horaire, personne invitée) — il ne reste qu'à enregistrer. Pour tout charger d'un coup, utilisez l'export <strong>.ics</strong> puis, dans Google Agenda, <em>Paramètres → Importer</em>.</div>
+        <div style="font-size:13px;line-height:1.7;color:#8a8378;margin-top:4px">Les affectations sont enregistrées dans ce navigateur au fur et à mesure. Congés et absences restent à vérifier sur l'agenda partagé.</div>
+      </div>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const TEAM = [
+  { name: 'Patricia Julien', short: 'Patricia', email: 'p.julien@campusdes11arts.com' },
+  { name: 'Simon Hidier', short: 'Simon', email: 's.hidier@campusdes11arts.com' },
+  { name: 'Rémi Lusley', short: 'Rémi', email: 'r.lusley@campusdes11arts.com' },
+  { name: 'Yacout Berdai', short: 'Yacout', email: 'y.berdai@campusdes11arts.com' },
+  { name: 'Galit Cherpak', short: 'Galit', email: 'g.cherpak@campusdes11arts.com' },
+  { name: 'A. Adilova', short: 'Adilova', email: 'a.adilova@campusdes11arts.com' }
+];
+const SPECIALS = ['WEI', 'Fermé'];
+const SATURDAY_EVENTS = ['Salon', 'JPO'];
+const DAY_NAMES = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+const MONTHS = ['janv.', 'févr.', 'mars', 'avril', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+const CLOSE_TIMES = ['17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '21:00'];
+const STORE = 'planning-11arts-2627';
+const YEAR_START = new Date(2026, 7, 31);
+const YEAR_END = new Date(2027, 6, 11);
+
+const iso = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const isoWeekNo = (d) => {
+  const t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  t.setDate(t.getDate() + 3 - ((t.getDay() + 6) % 7));
+  const first = new Date(t.getFullYear(), 0, 4);
+  return 1 + Math.round(((t - first) / 86400000 - 3 + ((first.getDay() + 6) % 7)) / 7);
+};
+
+const SEED = {
+  '2026-09-02': { open: 'Patricia', openTime: '09:00', close: 'Simon', closeTime: '19:00' },
+  '2026-09-03': { open: 'Galit', openTime: '09:00', close: 'Simon', closeTime: '19:00' },
+  '2026-09-04': { open: 'Simon', openTime: '09:00', close: 'Rémi', closeTime: '19:00' },
+  '2026-09-07': { open: 'Yacout', openTime: '09:00', close: 'Rémi', closeTime: '19:00' },
+  '2026-09-08': { open: 'Patricia', openTime: '09:00', close: 'Simon', closeTime: '19:00' },
+  '2026-09-09': { open: 'Galit', openTime: '09:00', close: 'Rémi', closeTime: '19:00' },
+  '2026-09-10': { open: 'Simon', openTime: '09:00', close: 'WEI', closeTime: '19:00' }
+};
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const weeks = [];
+    for (let d = new Date(YEAR_START); d <= YEAR_END; d = addDays(d, 7)) weeks.push(new Date(d));
+    let saved = null;
+    try { saved = JSON.parse(window.localStorage.getItem(STORE) || 'null'); } catch (e) { saved = null; }
+    const today = new Date();
+    let idx = weeks.findIndex((w) => today < addDays(w, 7));
+    if (idx < 0) idx = 0;
+    this.weeks = weeks;
+    this.state = { data: saved || Object.assign({}, SEED), weekIndex: idx };
+  }
+
+  persist(data) {
+    this.setState({ data });
+    try { window.localStorage.setItem(STORE, JSON.stringify(data)); } catch (e) {}
+  }
+
+  entry(key) {
+    return this.state.data[key] || { open: '', openTime: '09:00', close: '', closeTime: '19:00' };
+  }
+
+  patch(key, field, value) {
+    const data = Object.assign({}, this.state.data);
+    data[key] = Object.assign({}, this.entry(key), { [field]: value });
+    this.persist(data);
+  }
+
+  weekDates(i) {
+    const mon = this.weeks[i];
+    return DAY_NAMES.map((_, k) => addDays(mon, k));
+  }
+
+  personBy(short) { return TEAM.find((p) => p.short === short); }
+
+  fmt(d) { return d.getDate() + ' ' + MONTHS[d.getMonth()]; }
+
+  gcal(date, time, who, kind, minutes) {
+    const p = this.personBy(who);
+    if (!who) return null;
+    const [h, m] = time.split(':').map(Number);
+    const end = new Date(date.getFullYear(), date.getMonth(), date.getDate(), h, m + minutes);
+    const stamp = (dt) => iso(dt).replace(/-/g, '') + 'T' + String(dt.getHours()).padStart(2, '0') + String(dt.getMinutes()).padStart(2, '0') + '00';
+    const start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), h, m);
+    const params = [
+      'action=TEMPLATE',
+      'text=' + encodeURIComponent(SATURDAY_EVENTS.indexOf(who) >= 0 ? who + ' — Campus des 11 Arts' : kind + ' du campus — ' + who),
+      'dates=' + stamp(start) + '/' + stamp(end),
+      'ctz=Europe/Paris',
+      'details=' + encodeURIComponent('Planning ouverture / fermeture — Campus des 11 Arts.'),
+      'location=' + encodeURIComponent('Campus des 11 Arts')
+    ];
+    if (p) params.push('add=' + encodeURIComponent(p.email));
+    return 'https://calendar.google.com/calendar/render?' + params.join('&');
+  }
+
+  icsFor(keys, only) {
+    const esc = (s) => String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+    const now = new Date();
+    const stampNow = now.getUTCFullYear() + String(now.getUTCMonth() + 1).padStart(2, '0') + String(now.getUTCDate()).padStart(2, '0')
+      + 'T' + String(now.getUTCHours()).padStart(2, '0') + String(now.getUTCMinutes()).padStart(2, '0') + String(now.getUTCSeconds()).padStart(2, '0') + 'Z';
+    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Campus des 11 Arts//Planning//FR', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+      'X-WR-CALNAME:Ouverture / fermeture — Campus des 11 Arts', 'X-WR-TIMEZONE:Europe/Paris',
+      'BEGIN:VTIMEZONE', 'TZID:Europe/Paris',
+      'BEGIN:DAYLIGHT', 'TZOFFSETFROM:+0100', 'TZOFFSETTO:+0200', 'TZNAME:CEST', 'DTSTART:19700329T020000', 'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU', 'END:DAYLIGHT',
+      'BEGIN:STANDARD', 'TZOFFSETFROM:+0200', 'TZOFFSETTO:+0100', 'TZNAME:CET', 'DTSTART:19701025T030000', 'RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU', 'END:STANDARD',
+      'END:VTIMEZONE'];
+    const dt = (dateStr, time, addMin) => {
+      const [y, mo, da] = dateStr.split('-').map(Number);
+      const [h, mi] = time.split(':').map(Number);
+      const d = new Date(y, mo - 1, da, h, mi + (addMin || 0));
+      return iso(d).replace(/-/g, '') + 'T' + String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0') + '00';
+    };
+    keys.forEach((k) => {
+      const e = this.state.data[k];
+      if (!e) return;
+      [['Ouverture', e.open, e.openTime || '09:00'], ['Fermeture', e.close, e.closeTime || '19:00']].forEach(([kind, who, time]) => {
+        if (!who) return;
+        if (only && who !== only) return;
+        const p = this.personBy(who);
+        const isEvent = SATURDAY_EVENTS.indexOf(who) >= 0;
+        lines.push('BEGIN:VEVENT');
+        lines.push('UID:' + k + '-' + kind.toLowerCase() + '@campusdes11arts.com');
+        lines.push('DTSTAMP:' + stampNow);
+        lines.push('DTSTART;TZID=Europe/Paris:' + dt(k, time));
+        lines.push('DTEND;TZID=Europe/Paris:' + dt(k, time, 30));
+        lines.push('SUMMARY:' + esc(isEvent ? who + ' — Campus des 11 Arts' : kind + ' — ' + who));
+        lines.push('DESCRIPTION:' + esc('Planning ouverture / fermeture — Campus des 11 Arts.'));
+        lines.push('LOCATION:' + esc('Campus des 11 Arts'));
+        lines.push('STATUS:CONFIRMED');
+        lines.push('TRANSP:OPAQUE');
+        if (p) {
+          lines.push('ORGANIZER;CN=' + esc(p.name) + ':mailto:' + p.email);
+          lines.push('ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN=' + esc(p.name) + ':mailto:' + p.email);
+        }
+        lines.push('END:VEVENT');
+      });
+    });
+    lines.push('END:VCALENDAR');
+    return lines.join('\r\n');
+  }
+
+  download(name, text) {
+    const blob = new Blob([text], { type: 'text/calendar;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
+  renderVals() {
+    const i = this.state.weekIndex;
+    const dates = this.weekDates(i);
+    const base = [{ v: '', label: '—' }]
+      .concat(TEAM.map((p) => ({ v: p.short, label: p.short })))
+      .concat(SPECIALS.map((s) => ({ v: s, label: s })));
+    const choices = base;
+    const satChoices = base.concat(SATURDAY_EVENTS.map((s) => ({ v: s, label: s })));
+
+    const days = dates.map((date, di) => {
+      const key = iso(date);
+      const e = this.entry(key);
+      const early = e.openTime === '08:00';
+      const isSat = di === 5;
+      const isEvent = SATURDAY_EVENTS.indexOf(e.open) >= 0 || SATURDAY_EVENTS.indexOf(e.close) >= 0;
+      const rowBg = isEvent ? '#f1f1ea' : '#fbfaf7';
+      return {
+        key,
+        choices: isSat ? satChoices : base,
+        eventTag: isEvent ? (SATURDAY_EVENTS.indexOf(e.open) >= 0 ? e.open : e.close) : '',
+        eventShown: isEvent ? 'inline-block' : 'none',
+        dayName: DAY_NAMES[date.getDay() === 0 ? 6 : date.getDay() - 1],
+        dateLabel: String(date.getDate()).padStart(2, '0') + '.' + String(date.getMonth() + 1).padStart(2, '0'),
+        open: e.open, close: e.close,
+        openTime: e.openTime || '09:00',
+        closeTime: e.closeTime || '19:00',
+        rowBg,
+        dayBg: rowBg,
+        openBg: early ? '#fbf1ea' : rowBg,
+        openTimeBg: early ? '#9a4a25' : '#f4f2ed',
+        openTimeFg: early ? '#fbfaf7' : '#4a453d',
+        openTimeBorder: early ? '#9a4a25' : '#dcd7cd',
+        openOpacity: e.open ? 1 : 0.22,
+        closeOpacity: e.close ? 1 : 0.22,
+        gcalOpen: this.gcal(date, e.openTime || '09:00', e.open, 'Ouverture', 30) || '#',
+        gcalClose: this.gcal(date, e.closeTime || '19:00', e.close, 'Fermeture', 30) || '#',
+        setOpen: (ev) => this.patch(key, 'open', ev.target.value),
+        setClose: (ev) => this.patch(key, 'close', ev.target.value),
+        setCloseTime: (ev) => this.patch(key, 'closeTime', ev.target.value),
+        toggleOpenTime: () => this.patch(key, 'openTime', (e.openTime === '08:00') ? '09:00' : '08:00')
+      };
+    });
+
+    const filled = days.filter((d) => d.open || d.close).length;
+    const early = days.filter((d) => d.openTime === '08:00' && d.open).length;
+
+    return {
+      team: TEAM.map((p) => ({
+        name: p.name,
+        email: p.email,
+        exportPerson: () => this.download('planning-' + p.short.toLowerCase().normalize('NFD').replace(/[^a-z]/g, '') + '.ics',
+          this.icsFor(Object.keys(this.state.data).sort(), p.short))
+      })),
+      choices,
+      closeTimes: CLOSE_TIMES,
+      days,
+      weekIndex: String(i),
+      weekTitle: 'Semaine ' + isoWeekNo(dates[0]),
+      weekRange: this.fmt(dates[0]) + ' – ' + this.fmt(dates[5]) + ' ' + dates[5].getFullYear(),
+      weekSummary: filled + '/6 jours renseignés' + (early ? ' · ' + early + ' ouverture(s) à 8h' : ''),
+      weekOptions: this.weeks.map((w, k) => ({
+        i: String(k),
+        label: 'Semaine ' + isoWeekNo(w) + ' — ' + this.fmt(w) + ' au ' + this.fmt(addDays(w, 5)) + ' ' + addDays(w, 5).getFullYear()
+      })),
+      onWeekPick: (ev) => this.setState({ weekIndex: Number(ev.target.value) }),
+      prevWeek: () => this.setState({ weekIndex: Math.max(0, i - 1) }),
+      nextWeek: () => this.setState({ weekIndex: Math.min(this.weeks.length - 1, i + 1) }),
+      copyPrev: () => {
+        if (i === 0) return;
+        const prev = this.weekDates(i - 1);
+        const data = Object.assign({}, this.state.data);
+        prev.forEach((d, k) => {
+          const src = this.state.data[iso(d)];
+          if (src) data[iso(dates[k])] = Object.assign({}, src);
+        });
+        this.persist(data);
+      },
+      clearWeek: () => {
+        const data = Object.assign({}, this.state.data);
+        dates.forEach((d) => { delete data[iso(d)]; });
+        this.persist(data);
+      },
+      printWeek: () => window.print(),
+      exportWeek: () => this.download('planning-semaine-' + isoWeekNo(dates[0]) + '.ics', this.icsFor(dates.map(iso))),
+      exportAll: () => this.download('planning-annee-2026-2027.ics', this.icsFor(Object.keys(this.state.data).sort()))
+    };
+  }
+}
+</script>
+</body>
+</html>
